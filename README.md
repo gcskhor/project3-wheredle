@@ -1,1 +1,1 @@
-# Rocket Academy Coding Bootcamp: Webpack MVC Base
+# Rocket Academy Coding Bootcamp: Project 3 - WHEREDLE

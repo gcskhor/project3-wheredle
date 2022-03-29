@@ -1,0 +1,11 @@
+// curl -L -X GET 'https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=%2B16502530000&inputtype=phonenumber&key=AIzaSyAZJ3xmSE-qQq3a37nzAQqw6Uwk2C8tr1g'
+
+// https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=-33.8670522,151.1957362&radius=1500&type=restaurant&keyword=cruise&key=AIzaSyAZJ3xmSE-qQq3a37nzAQqw6Uwk2C8tr1g
+
+
+get 20 museums
+curl -L -X GET 'https://maps.googleapis.com/maps/api/place/textsearch/json?query=museums+singapore&key=AIzaSyAZJ3xmSE-qQq3a37nzAQqw6Uwk2C8tr1g'
+
+20 restaurants
+curl -L -X GET 'https://maps.googleapis.com/maps/api/place/textsearch/json?query=restaurants+singapore&key=AIzaSyAZJ3xmSE-qQq3a37nzAQqw6Uwk2C8tr1g'
+
