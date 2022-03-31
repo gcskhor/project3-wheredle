@@ -1,10 +1,12 @@
 body {
-  background-color: pink;
+  background-color: whitesmoke;
+  padding: 5px;
 }
 
 #map {
+  margin: auto;
   height: 400px;
   /* The height is 400 pixels */
-  width: 100%;
+  width: 95%;
   /* The width is the width of the web page */
 }

@@ -4,7 +4,7 @@
 
 
 get 20 museums
-curl -L -X GET 'https://maps.googleapis.com/maps/api/place/textsearch/json?query=museums+singapore&key=AIzaSyAZJ3xmSE-qQq3a37nzAQqw6Uwk2C8tr1g'
+curl -L -X GET 'https://maps.googleapis.com/maps/api/place/textsearch/json?query=museums+singapore&key=AIzaSyAvFStCxa8h0bJEyVvKKe93gCUsEcJYZO4'
 
 20 restaurants
 curl -L -X GET 'https://maps.googleapis.com/maps/api/place/textsearch/json?query=restaurants+singapore&key=AIzaSyAZJ3xmSE-qQq3a37nzAQqw6Uwk2C8tr1g'

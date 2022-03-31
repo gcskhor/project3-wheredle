@@ -28,6 +28,9 @@ else {
   sequelize = new Sequelize(config.database, config.username, config.password, config);
 }
 
+db.User.belongsToMany(db.Game, { through: 'game_users' });
+db.Game.belongsToMany(db.User, { through: 'game_users' });
+
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
