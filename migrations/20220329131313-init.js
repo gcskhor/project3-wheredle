@@ -32,6 +32,14 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
+      user_id: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'users',
+          key: 'id',
+        },
+      },
       game_state: {
         type: Sequelize.JSON,
       },
@@ -43,40 +51,6 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE,
       },
-    });
-
-    await queryInterface.createTable('game_users', {
-      id: {
-        allowNull: false,
-        autoIncrement: true,
-        primaryKey: true,
-        type: Sequelize.INTEGER,
-      },
-      game_id: {
-        allowNull: false,
-        type: Sequelize.INTEGER,
-        references: {
-          model: 'games',
-          key: 'id',
-        },
-      },
-      user_id: {
-        allowNull: false,
-        type: Sequelize.INTEGER,
-        references: {
-          model: 'users',
-          key: 'id',
-        },
-      },
-      created_at: {
-        allowNull: false,
-        type: Sequelize.DATE,
-      },
-      updated_at: {
-        allowNull: false,
-        type: Sequelize.DATE,
-      },
-
     });
 
     await queryInterface.createTable('places', {
@@ -100,13 +74,20 @@ module.exports = {
       rating: {
         type: Sequelize.STRING,
       },
+      created_at: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
+      updated_at: {
+        allowNull: false,
+        type: Sequelize.DATE,
+      },
     });
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('game_users', null, {});
-    await queryInterface.dropTable('users', null, {});
-    await queryInterface.dropTable('games', null, {});
     await queryInterface.dropTable('places', null, {});
+    await queryInterface.dropTable('games', null, {});
+    await queryInterface.dropTable('users', null, {});
   },
 };

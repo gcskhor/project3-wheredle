@@ -940,6 +940,10 @@ module.exports = {
       Object.keys(museum).forEach((key) => validKeys.includes(key) || delete museum[key]);
       const geometryValue = museum.geometry;
       museum.geometry = JSON.stringify(geometryValue); // stringify to avoid json value issues
+
+      // add created_at/updated_at keys
+      museum.created_at = new Date();
+      museum.updated_at = new Date();
     });
 
     await queryInterface.bulkInsert('places', museums, { returning: true });
