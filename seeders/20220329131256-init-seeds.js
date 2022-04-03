@@ -129,7 +129,7 @@ module.exports = {
       {
         user_id: 1,
         game_state: JSON.stringify({
-          guesses: {},
+          guesses: [],
           answer: loc1,
         }),
         created_at: new Date(),
@@ -138,7 +138,7 @@ module.exports = {
       {
         user_id: 2,
         game_state: JSON.stringify({
-          guesses: {},
+          guesses: [],
           answer: loc2,
         }),
         created_at: new Date(),
@@ -150,6 +150,7 @@ module.exports = {
   },
 
   down: async (queryInterface) => {
+    await queryInterface.bulkDelete('games', null, {});
     await queryInterface.bulkDelete('users', null, {});
   },
 };

@@ -1,16 +1,49 @@
+/* eslint-disable no-nested-ternary */
+/* eslint-disable max-len */
+
+const haversineDistance = (aLat, aLong, gLat, gLong) => {
+  const R = 6371.0710; // Radius of the Earth in miles
+  const rlat1 = aLat * (Math.PI / 180); // Convert degrees to radians
+  const rlat2 = gLat * (Math.PI / 180); // Convert degrees to radians
+  const difflat = rlat2 - rlat1; // Radian difference (latitudes)
+  const difflon = (gLong - aLong) * (Math.PI / 180); // Radian difference (longitudes)
+
+  const d = 2 * R * Math.asin(Math.sqrt(Math.sin(difflat / 2) * Math.sin(difflat / 2) + Math.cos(rlat1) * Math.cos(rlat2) * Math.sin(difflon / 2) * Math.sin(difflon / 2)));
+  return d;
+};
+
+const bearing = (destLat, destLng, startLat, startLng) => {
+  // Converts from degrees to radians.
+  const toRadians = (degrees) => (degrees * Math.PI) / 180;
+
+  // Converts from radians to degrees.
+  const toDegrees = (radians) => (radians * 180) / Math.PI;
+  const startLatRad = toRadians(startLat);
+  const startLngRad = toRadians(startLng);
+  const destLatRad = toRadians(destLat);
+  const destLngRad = toRadians(destLng);
+
+  const y = Math.sin(destLngRad - startLngRad) * Math.cos(destLatRad);
+  const x = Math.cos(startLatRad) * Math.sin(destLatRad) - Math.sin(startLatRad) * Math.cos(destLatRad) * Math.cos(destLngRad - startLngRad);
+  let brng = Math.atan2(y, x);
+  brng = toDegrees(brng);
+  return (brng + 360) % 360;
+};
+
 export default function initGamesController(db) {
-  const create = async (req, res) => {
-    const cardDeck = shuffleCards(makeDeck());
-    const player1Card = cardDeck.pop();
-    const player2Card = cardDeck.pop();
-    let player1Score = 0;
-    let player2Score = 0;
+  /*
+const create = async (req, res) => {
+  const cardDeck = shuffleCards(makeDeck());
+  const player1Card = cardDeck.pop();
+  const player2Card = cardDeck.pop();
+  let player1Score = 0;
+  let player2Score = 0;
 
-    // determine winner
-    let result;
+  // determine winner
+  let result;
 
-    if (player1Card.rank > player2Card.rank) {
-      result = 'Player 1 wins!!';
+  if (player1Card.rank > player2Card.rank) {
+    result = 'Player 1 wins!!';
       player1Score += 1;
     } else if (player1Card.rank < player2Card.rank) {
       result = 'Player 2 wins!!';
@@ -160,8 +193,22 @@ export default function initGamesController(db) {
       result: updatedGame.gameState.result,
       score: updatedGame.gameState.score,
     });
-    }
-    catch (error) {
+  }
+  catch (error) {
+    console.log(error);
+  }
+};
+*/
+  const gamestate = async (req, res) => {
+    try {
+      console.log(req.params.id);
+      const currentGame = await db.Game.findByPk(req.params.id);
+
+      const { guesses } = currentGame.dataValues.game_state;
+
+      // console.log(currentGame.dataValues.game_state.guesses);
+      res.send(guesses);
+    } catch (error) {
       console.log(error);
     }
   };
@@ -170,6 +217,14 @@ export default function initGamesController(db) {
     const userInput = req.body.guess;
     // console.log(req.body.guess); // works
     try {
+      console.log('id');
+      console.log(req.params.id);
+      const currentGame = await db.Game.findByPk(req.params.id);
+
+      console.log('Current Game: ');
+      console.log(currentGame);
+
+      // check if user's guess exists in db
       const guessedLocation = await db.Place.findOne(
         {
           where: {
@@ -178,21 +233,70 @@ export default function initGamesController(db) {
         },
       );
 
-      if (!guessedLocation) {
-        res.send({ status: 'none' });
-        console.log('not found');
-      } else {
-        res.send({ status: 'found', locationData: guessedLocation });
-        console.log(guessedLocation);
-      }
-
       // ADD LOGIC TO CHECK DB IF GUESS EXISTS
       // CHECK IF GUESS EXISTS IN 'LOCATIONS' TABLE
+      if (!guessedLocation) {
+        res.send({ status: 'none', guesses: currentGame.game_state.guesses });
+        console.log('guessed location not found');
+      }
+
+      else { // if guessed location exists
+        // UPDATE GAMESTATE JSON WITH NEW GUESS LOCATION
+        const guess = guessedLocation.dataValues; // data of guessed location
+        console.log(guess);
+        const guessLongLat = guess.geometry.location;
+
+        const gameState = currentGame.game_state; // current game's game state
+
+        // CALCULATE DISTANCE AND DIRECTION BTW ANSWER AND GUESS
+        const answerLocation = currentGame.game_state.answer;
+        const answerLongLat = answerLocation.geometry.location;
+
+        const answerLat = answerLongLat.lat;
+        const answerLong = answerLongLat.lng;
+
+        const guessLat = guessLongLat.lat;
+        const guessLong = guessLongLat.lng;
+
+        // add clues key to the guess in gamestate
+        guess.clues = {
+          distance: haversineDistance(answerLat, answerLong, guessLat, guessLong),
+          bearing: bearing(answerLat, answerLong, guessLat, guessLong),
+        };
+
+        gameState.guesses.push(guess);
+
+        if (guess.name === currentGame.game_state.answer) { // WIN CONDITION
+          console.log('game has been won!!!');
+          gameState.active = false;
+          currentGame.changed('game_state', true);
+          const updatedGame = await currentGame.save(); // fixes json update problem
+          res.send({
+            status: 'found', game: 'win', guesses: updatedGame.game_state.guesses, answer: updatedGame.game_state.answer,
+          });
+        }
+        else if (gameState.guesses.length < 10) { // CONTINUE PLAYING CONDITION
+          // end game
+          gameState.active = true;
+          currentGame.changed('game_state', true);
+          const updatedGame = await currentGame.save(); // fixes json update problem
+          res.send({ status: 'found', guesses: updatedGame.game_state.guesses });
+        }
+        else { // LOSE CONDITION
+          gameState.active = false;
+          currentGame.changed('game_state', true);
+          const updatedGame = await currentGame.save(); // fixes json update problem
+          res.send({
+            status: 'found', game: 'lose', guesses: updatedGame.game_state.guesses, answer: updatedGame.game_state.answer,
+          });
+        }
+      }
     } catch (error) {
       console.log(error);
     }
   };
 
+  /*
   const logout = async (req, res) => {
     console.log('current game id', req.params.id);
     try {
@@ -212,7 +316,9 @@ export default function initGamesController(db) {
       console.log(error);
     }
   };
+  */
+
   return {
-    create, update, deal, logout, makeGuess,
+    gamestate, makeGuess,
   };
 }

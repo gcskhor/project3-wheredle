@@ -25,5 +25,5 @@ app.use(express.static('dist'));
 bindRoutes(app);
 
 // Set Express to listen on the given port
-const PORT = process.env.PORT || 3006;
+const PORT = process.env.PORT || 3008;
 app.listen(PORT);

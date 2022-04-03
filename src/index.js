@@ -3,10 +3,11 @@
 /* eslint-disable no-undef */
 import './styles.scss';
 import styleArr from './mapStyle.js';
-import { countries } from './autocomplete.js';
+import { createLoginPage, checkUserLogin } from './login.js';
 
 // GLOBAL VARIABLES
 let allLocs = null;
+let gamestateGuesses = null;
 
 // TEST BUTTON
 const testEle = document.createElement('button');
@@ -47,17 +48,22 @@ let map;
 // );
 
 // ADD MARKER FUNCTION
-const addMarker = (coords) => {
+const addMarkerStatic = (guess) => {
   const marker = new google.maps.Marker({
-    position: coords,
-    animation: google.maps.Animation.DROP,
+    position: guess.geometry.location,
     map,
     // icon: pinIcon, // disable this if pinIcon is removed
   });
 
+  const infoWindowContent = `
+  <h4>${guess.name}</h4>
+  <div>${guess.formatted_address}</div>
+  <div>Rating: ${guess.rating}</div>
+  `;
+
   // ADD INFO WINDOW
   const infowindow = new google.maps.InfoWindow({
-    content: '<h1>this!<h1>',
+    content: infoWindowContent,
   });
 
   marker.addListener('click', () => {
@@ -67,6 +73,40 @@ const addMarker = (coords) => {
       shouldFocus: false,
     });
   });
+
+  // map.addListener('click', () => {
+  //   infowindow.close();
+  // });
+};
+
+const addMarkerAnimation = (guess) => {
+  const marker = new google.maps.Marker({
+    position: guess.geometry.location,
+    animation: google.maps.Animation.DROP,
+    map,
+    // icon: pinIcon, // disable this if pinIcon is removed
+  });
+
+  const infoWindowContent = `
+  <h4>${guess.name}</h4>
+  <div>${guess.formatted_address}</div>
+  <div>Rating: ${guess.rating}</div>
+  `;
+
+  // ADD INFO WINDOW
+  const infowindow = new google.maps.InfoWindow({
+    content: infoWindowContent,
+  });
+
+  marker.addListener('click', () => {
+    infowindow.open({
+      anchor: marker,
+      map,
+      shouldFocus: false,
+    });
+  });
+
+  infowindow.addListener('');
 };
 
 // INITIALISE MAP
@@ -102,29 +142,9 @@ function initMap() {
   //   new google.maps.Size(30, 45),
   // );
 
-  // // ADD MARKER FUNCTION
-  // const addMarker = (coords) => {
-  //   const marker = new google.maps.Marker({
-  //     position: coords,
-  //     animation: google.maps.Animation.DROP,
-  //     map,
-  //     icon: pinIcon,
-  //   });
-  // };
-
-  // // STATIC LOCATIONS
-  // const locations = [
-  //   { lat: 1.296816794731764, lng: 103.84844472447658 },
-  //   { lat: 1.2843594052784335, lng: 103.78211236351044 },
-  //   { lat: 1.3044386614460384, lng: 103.81206727361928 },
-  // ];
-  // locations.forEach((location) => {
-  //   addMarker(location);
-  // });
-
   // CLICK MAP TO CREATE MARKER
   google.maps.event.addListener(map, 'click', (event) => {
-    addMarker(event.latLng);
+    addMarkerStatic(event.latLng);
   });
 
   // SET MAP STYLE FROM IMPORTED STYLE VARIABLE
@@ -132,39 +152,8 @@ function initMap() {
   map.setMapTypeId('styled_map');
 }
 
-// STATIC LOCATIONS
-const locations = [
-  { lat: 1.296816794731764, lng: 103.84844472447658 },
-  { lat: 1.2843594052784335, lng: 103.78211236351044 },
-  { lat: 1.3044386614460384, lng: 103.81206727361928 },
-];
-
-const addStaticPins = () => {
-  locations.forEach((location) => {
-    addMarker(location);
-  });
-};
-
 // ENSURE MAP IS MADE GLOBAL TO THE WINDOW TO OVERCOME WEBPACK ISSUES
 window.initMap = initMap;
-
-testEle.addEventListener('click', addStaticPins); // RE-INIT MAP BUTTON
-
-// TEST -  GET ALL LOCATIONS
-const getAllLocations = () => {
-  axios.get('/all-locations')
-    .then((response) => {
-    // handle success
-      allLocs = response.data.places;
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-};
-
-getAllLocations();
-
-// testEle2.addEventListener('click', getAllLocations);
 
 // troubleshooting google maps appearing:
 // https://stackoverflow.com/questions/48705066/initmap-is-not-a-function-error-in-js-console-google-maps-api
@@ -198,7 +187,7 @@ const outputHtml = (matches) => {
     });
   }
 };
-// test5
+
 const searchLocations = (searchText) => {
   const dataArr = allLocs;
 
@@ -223,18 +212,107 @@ searchInput.addEventListener('input', () => {
   searchLocations(searchInput.value);
 });
 
+// TEST -  GET ALL LOCATIONS
+const getAllLocations = () => {
+  axios.get('/all-locations')
+    .then((response) => {
+      console.log('getting all locations: getAllLocations()');
+      allLocs = response.data.places;
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+};
+
+const getGameState = () => {
+  axios.get('/gamestate/2')
+    .then((response) => {
+      const guesses = response.data;
+      console.log(guesses);
+      gamestateGuesses = guesses;
+      console.log('getting gameState: getGameState()');
+
+      // return guesses;
+    }).catch((error) => {
+      console.log(error);
+    });
+};
+
+const displayGuesses = (guesses) => {
+  // DISPLAY ALL GUESSES IN ORDER
+  const guessesDiv = document.querySelector('#guesses-div');
+  guessesDiv.innerHTML = ''; // clear innerhtml before repopulating
+  console.log('displaying guesses: displayGuesses()');
+
+  guesses.forEach((guess, index) => {
+    const guessContainer = document.createElement('div');
+    guessContainer.setAttribute('id', `guess-${index}`);
+    guessContainer.innerHTML = `
+    <div class='guess-container' id='guess-${index}'>
+    ${guess.name}   distance: ${guess.clues.distance.toFixed(2)} km <img src="./images/direction_pointer.png" style='transform:rotate(${guess.clues.bearing}deg)' class="direction-pointer"/> 
+    </div>
+    `;
+    guessesDiv.appendChild(guessContainer);
+  });
+};
+
+const addAllGuessPins = (guesses) => {
+  guesses.forEach((guess) => {
+    addMarkerStatic(guess);
+  });
+};
+
+const addLastGuessPin = (guesses) => {
+  addMarkerAnimation(guesses[guesses.length - 1]);
+};
+
 submitGuessBtn.addEventListener('click', () => {
   const guessInput = searchInput.value;
-  axios.post('/submit-guess', { guess: guessInput })
+  axios.post('/submit-guess/2', { guess: guessInput }) // TODO: ADJUST ID VARIABLE
     .then((res) => {
-      console.log(res.data);
-      // if (res.data.status === 'none') {
-      //   // input validation on FE
-      //   console.log('invalid guess');
-      // }
-      // if (res.data.status === 'found') {
-      //   // show distance/direction data
-      //   console.log(`guessed ${res.data.locationData.name}`);
-      // }
+      console.log(res);
+      const { guesses } = res.data;
+      if (res.data.status !== 'found') {
+        console.log('invalid guess');
+        displayGuesses(guesses);
+      } else {
+        console.log('valid guess!');
+        // displayGuesses(guesses);
+        displayGuesses(guesses);
+        addLastGuessPin(guesses);
+        searchInput.value = '';
+        console.log(guesses);
+      }
     });
 });
+
+// // LOG IN
+const loginNavElement = document.querySelector('#login-nav');
+loginNavElement.addEventListener('click', () => {
+  const gameDiv = document.querySelector('#game');
+  gameDiv.style.display = 'none';
+  createLoginPage();
+});
+
+// INIT GAME FUNCTIONS
+checkUserLogin();
+getAllLocations();
+getGameState();
+setTimeout(() => {
+  displayGuesses(gamestateGuesses);
+  addAllGuessPins(gamestateGuesses);
+  console.log(gamestateGuesses);
+},
+300);
+
+// const initGame = async () => {
+//   await getAllLocations();
+//   await getGameState();
+
+//   // displayGuesses(guesses);
+//   // addAllGuessPins(guesses);
+//   // console.log(guesses);
+// };
+
+// getAllLocations(); // extracts all possible guesses from the db and places into the allLocs variable
+// getGameState(); // places all guesses into the gamestateGuesses variable

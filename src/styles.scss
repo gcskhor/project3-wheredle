@@ -1,6 +1,7 @@
 body {
   background-color: whitesmoke;
   padding: 5px;
+  font-family: "Quicksand", sans-serif;
 }
 
 #map {
@@ -10,10 +11,6 @@ body {
   width: 95%;
   /* The width is the width of the web page */
   border-radius: 20px;
-}
-
-body {
-  font: 16px Arial;
 }
 
 /*the container must be positioned relative:*/
@@ -73,3 +70,19 @@ input[type="submit"] {
 .card-body {
   padding: 0.5rem 0.5rem;
 }
+
+.guess-container {
+  border: grey solid 1px;
+  background-color: lightblue;
+  border-radius: 5px;
+  padding: 5px;
+  margin: 5px;
+}
+
+.direction-pointer {
+  width: 20px;
+}
+
+// #login-page {
+//   display: none;
+// }
