@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable max-len */
 /* eslint-disable no-undef */
+import 'regenerator-runtime/runtime';
 import './styles.scss';
 import styleArr from './mapStyle.js';
 import { createLoginPage, checkUserLogin } from './login.js';
@@ -8,16 +9,7 @@ import { createLoginPage, checkUserLogin } from './login.js';
 // GLOBAL VARIABLES
 let allLocs = null;
 let gamestateGuesses = null;
-
-// TEST BUTTON
-const testEle = document.createElement('button');
-testEle.innerText = 'RE-INIT MAP';
-document.body.appendChild(testEle);
-
-// TEST BUTTON2
-const testEle2 = document.createElement('button');
-testEle2.innerText = 'get locations';
-document.body.appendChild(testEle2);
+let gameIsActive = true;
 
 // GOOGLE API CONFIG + API KEY
 const axios = require('axios');
@@ -224,13 +216,36 @@ const getAllLocations = () => {
     });
 };
 
-const getGameState = () => {
-  axios.get('/gamestate/2')
+const getUserId = () => {
+  const cookies = document.cookie.split('; ');
+  const userId = cookies
+    .find((cookie) => cookie.startsWith('userId'))
+    ?.split('=')[1];
+  return userId;
+};
+
+const getGameId = async () => {
+  const userId = getUserId();
+  console.log(`userId:  ${userId}`);
+
+  return axios.get(`/findgame/${userId}`).then((response) => response.data.id);
+};
+
+const getGameState = async () => {
+  const gameId = await getGameId();
+  console.log(gameId);
+
+  await axios.get(`/gamestate/${gameId}`)
     .then((response) => {
-      const guesses = response.data;
-      console.log(guesses);
-      gamestateGuesses = guesses;
+      console.log(response);
+      const { guesses, answer, active } = response.data;
       console.log('getting gameState: getGameState()');
+      gamestateGuesses = guesses;
+      console.log(guesses);
+
+      if (!active) {
+        gameIsActive = false;
+      }
 
       // return guesses;
     }).catch((error) => {
@@ -256,6 +271,39 @@ const displayGuesses = (guesses) => {
   });
 };
 
+const displayGuessesWin = (guesses) => {
+  // DISPLAY ALL GUESSES IN ORDER
+  const guessesDiv = document.querySelector('#guesses-div');
+  guessesDiv.innerHTML = ''; // clear innerhtml before repopulating
+  console.log('displaying guesses: displayGuessesWin()');
+
+  guesses.forEach((guess, index) => {
+    if (index < guesses.length - 1) { // all guesses except last
+      const guessContainer = document.createElement('div');
+      guessContainer.setAttribute('id', `guess-${index}`);
+      guessContainer.innerHTML = `
+      <div class='guess-container' id='guess-${index}'>
+      ${guess.name}       ${guess.clues.distance.toFixed(2)}km <img src="./images/direction_pointer.png" style='transform:rotate(${guess.clues.bearing}deg)' class="direction-pointer"/> 
+      </div>
+      `;
+      guessesDiv.appendChild(guessContainer);
+    }
+    else { // last guess
+      const guessContainer = document.createElement('div');
+      guessContainer.setAttribute('id', `guess-${index}`);
+      guessContainer.innerHTML = `
+      <div class='guess-container' id='guess-${index} guess-correct'>
+      <b>${guess.name}</b>
+      <div>Congrats, you guessed right!</div>
+      </div>
+      `;
+      guessesDiv.appendChild(guessContainer);
+      // disable input
+      document.querySelector('#submit-guess-input').style.display = 'none';
+    }
+  });
+};
+
 const addAllGuessPins = (guesses) => {
   guesses.forEach((guess) => {
     addMarkerStatic(guess);
@@ -266,27 +314,61 @@ const addLastGuessPin = (guesses) => {
   addMarkerAnimation(guesses[guesses.length - 1]);
 };
 
-submitGuessBtn.addEventListener('click', () => {
+const submitGuess = async () => {
   const guessInput = searchInput.value;
-  axios.post('/submit-guess/2', { guess: guessInput }) // TODO: ADJUST ID VARIABLE
+  const gameId = await getGameId();
+  console.log(gameId);
+
+  axios.post(`/submit-guess/${gameId}`, { guess: guessInput }) // TODO: ADJUST ID VARIABLE
     .then((res) => {
       console.log(res);
-      const { guesses } = res.data;
+      const { guesses, game, answer } = res.data;
       if (res.data.status !== 'found') {
         console.log('invalid guess');
         displayGuesses(guesses);
       } else {
         console.log('valid guess!');
-        // displayGuesses(guesses);
         displayGuesses(guesses);
         addLastGuessPin(guesses);
         searchInput.value = '';
         console.log(guesses);
+        if (game === 'win') {
+          // change last box to something different!
+          displayGuessesWin(guesses);
+        }
+      }
+    });
+};
+
+submitGuessBtn.addEventListener('click', submitGuess);
+
+/*
+submitGuessBtn.addEventListener('click', () => {
+  const guessInput = searchInput.value;
+
+  axios.post('/submit-guess/2', { guess: guessInput }) // TODO: ADJUST ID VARIABLE
+    .then((res) => {
+      console.log(res);
+      const { guesses, game, answer } = res.data;
+      if (res.data.status !== 'found') {
+        console.log('invalid guess');
+        displayGuesses(guesses);
+      } else {
+        console.log('valid guess!');
+        displayGuesses(guesses);
+        addLastGuessPin(guesses);
+        searchInput.value = '';
+        console.log(guesses);
+        if (game === 'win') {
+          // change last box to something different!
+          displayGuessesWin(guesses);
+        }
       }
     });
 });
+*/
 
-// // LOG IN
+// LOG IN
 const loginNavElement = document.querySelector('#login-nav');
 loginNavElement.addEventListener('click', () => {
   const gameDiv = document.querySelector('#game');
@@ -294,25 +376,30 @@ loginNavElement.addEventListener('click', () => {
   createLoginPage();
 });
 
-// INIT GAME FUNCTIONS
-checkUserLogin();
-getAllLocations();
-getGameState();
-setTimeout(() => {
-  displayGuesses(gamestateGuesses);
-  addAllGuessPins(gamestateGuesses);
-  console.log(gamestateGuesses);
-},
-300);
+const newGameButton = document.querySelector('#new-game-button');
+newGameButton.addEventListener('click', () => {
+  const userId = getUserId();
+  axios.post('/newgame', { userId });
+  newGameButton.style.display = 'none'; // hides button
+});
 
-// const initGame = async () => {
-//   await getAllLocations();
-//   await getGameState();
+const initGame = async () => {
+  // INIT GAME FUNCTIONS
+  checkUserLogin();
+  getAllLocations(); // extracts all possible guesses from the db and places into the allLocs variable
+  getGameState(); // places all guesses into the gamestateGuesses variable
+  setTimeout(() => {
+    if (gameIsActive) { displayGuesses(gamestateGuesses); }
+    else {
+      displayGuessesWin(gamestateGuesses);
+      console.log('this shows that win is true');
+    }
 
-//   // displayGuesses(guesses);
-//   // addAllGuessPins(guesses);
-//   // console.log(guesses);
-// };
+    addAllGuessPins(gamestateGuesses);
+    console.log(gamestateGuesses);
+  },
+  500);
+};
+export default initGame;
 
-// getAllLocations(); // extracts all possible guesses from the db and places into the allLocs variable
-// getGameState(); // places all guesses into the gamestateGuesses variable
+initGame();

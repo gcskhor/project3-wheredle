@@ -1,3 +1,5 @@
+import initGame from './index.js';
+
 const axios = require('axios');
 
 export function createLoginPage() {
@@ -26,6 +28,7 @@ export function createLoginPage() {
           loginPage.style.display = 'none';
           document.querySelector('#game').style.display = 'block';
           console.log('logging in!!!');
+          initGame();
         }
       });
   });
@@ -49,10 +52,10 @@ export function checkUserLogin() {
   if (userId && loginHash) {
     axios.post('/checkauth', { userId, loginHash })
       .then((response) => {
-        console.log(response);
         if (!response.data.message) {
           forceLoginPage();
         }
+        return userId;
       });
   }
   else {

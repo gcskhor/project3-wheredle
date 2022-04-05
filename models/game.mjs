@@ -1,4 +1,4 @@
-export default function userModel(sequelize, DataTypes) {
+export default function gameModel(sequelize, DataTypes) {
   return sequelize.define('game', {
     id: {
       allowNull: false,
@@ -6,16 +6,15 @@ export default function userModel(sequelize, DataTypes) {
       primaryKey: true,
       type: DataTypes.INTEGER,
     },
+    user_id: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: 'users',
+        key: 'id',
+      },
+    },
     game_state: {
       type: DataTypes.JSON,
-    },
-    created_at: {
-      allowNull: false,
-      type: DataTypes.DATE,
-    },
-    updated_at: {
-      allowNull: false,
-      type: DataTypes.DATE,
     },
   },
   {

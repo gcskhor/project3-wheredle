@@ -1,5 +1,6 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable max-len */
+import { Sequelize } from 'sequelize';
 
 const haversineDistance = (aLat, aLong, gLat, gLong) => {
   const R = 6371.0710; // Radius of the Earth in miles
@@ -199,15 +200,44 @@ const create = async (req, res) => {
   }
 };
 */
-  const gamestate = async (req, res) => {
+
+  const findgame = async (req, res) => {
     try {
       console.log(req.params.id);
+      const userId = req.params.id;
+      const currentGame = await db.Game.findOne({
+        where: {
+          user_id: userId,
+          game_state: {
+            active: true,
+          },
+        },
+      });
+      console.log(currentGame);
+      const { id } = currentGame.dataValues;
+      res.send({ id });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const gamestate = async (req, res) => {
+    try {
+      console.log('gameId: ');
+      console.log(req.params.id);
       const currentGame = await db.Game.findByPk(req.params.id);
+      console.log(currentGame.dataValues.game_state);
 
-      const { guesses } = currentGame.dataValues.game_state;
+      const { guesses, active, answer } = currentGame.dataValues.game_state;
 
-      // console.log(currentGame.dataValues.game_state.guesses);
-      res.send(guesses);
+      if (active) {
+        console.log('game active');
+        res.send({ guesses, active });
+      }
+      else {
+        console.log('game inactive');
+        res.send({ guesses, active, answer });
+      }
     } catch (error) {
       console.log(error);
     }
@@ -266,7 +296,7 @@ const create = async (req, res) => {
 
         gameState.guesses.push(guess);
 
-        if (guess.name === currentGame.game_state.answer) { // WIN CONDITION
+        if (guess.name === currentGame.game_state.answer.name) { // WIN CONDITION
           console.log('game has been won!!!');
           gameState.active = false;
           currentGame.changed('game_state', true);
@@ -287,7 +317,10 @@ const create = async (req, res) => {
           currentGame.changed('game_state', true);
           const updatedGame = await currentGame.save(); // fixes json update problem
           res.send({
-            status: 'found', game: 'lose', guesses: updatedGame.game_state.guesses, answer: updatedGame.game_state.answer,
+            status: 'found',
+            game: 'lose',
+            guesses: updatedGame.game_state.guesses,
+            answer: updatedGame.game_state.answer,
           });
         }
       }
@@ -296,6 +329,53 @@ const create = async (req, res) => {
     }
   };
 
+  const newGame = async (req, res) => {
+    console.log(req.body.userId);
+    const { userId } = req.body;
+
+    try {
+      // find games from x user where game is active
+      const activeGames = await db.Game.findAll({
+        where: {
+          user_id: userId,
+          game_state: {
+            active: true,
+          },
+        },
+      });
+
+      if (activeGames.length > 0) { // if games are active, deny newGame
+        console.log('active game(s) is/are present, no new game created');
+        console.log(activeGames);
+        res.send({ message: 'An active game is already in progress.' });
+      }
+      else {
+        // gets a random location from the Place table
+        const randomLocation = await db.Place.findAll({
+          order: Sequelize.literal('random()'),
+          limit: 1,
+        });
+        console.log(randomLocation);
+
+        // asigns random location as an answer to a new game
+        const currentGame = await db.Game.create({
+          user_id: userId,
+          game_state: {
+            active: true,
+            guesses: [],
+            answer: randomLocation,
+          },
+        });
+
+        const { guesses, active } = currentGame.dataValues.game_state;
+        console.log(currentGame);
+
+        res.send({ guesses, active });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
   /*
   const logout = async (req, res) => {
     console.log('current game id', req.params.id);
@@ -319,6 +399,6 @@ const create = async (req, res) => {
   */
 
   return {
-    gamestate, makeGuess,
+    findgame, gamestate, makeGuess, newGame,
   };
 }

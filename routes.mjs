@@ -15,7 +15,11 @@ export default function bindRoutes(app) {
   });
 
   app.get('/all-locations', PlacesController.allLocations);
+
+  app.get('/findgame/:id', GamesController.findgame);
   app.get('/gamestate/:id', GamesController.gamestate);
+  app.post('/newgame', GamesController.newGame);
+
   app.post('/submit-guess/:id', GamesController.makeGuess);
   app.post('/login', UserController.login);
   app.post('/checkauth', UserController.checkAuth);

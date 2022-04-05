@@ -36,8 +36,13 @@ db.User = userModel(sequelize, Sequelize.DataTypes);
 db.Game = gameModel(sequelize, Sequelize.DataTypes);
 db.Place = placeModel(sequelize, Sequelize.DataTypes);
 
-db.User.belongsToMany(db.Game, { through: 'game_users' });
-db.Game.belongsToMany(db.User, { through: 'game_users' });
+// one user has many games
+// one game has only one user
+db.Game.belongsTo(db.User);
+db.User.hasMany(db.Game);
+
+// db.User.belongsToMany(db.Game, { through: 'game_users' });
+// db.Game.belongsToMany(db.User, { through: 'game_users' });
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
