@@ -430,6 +430,7 @@ const getGameId = () => {
   console.log(`userId:  ${userId}`);
 
   return axios.get(`/findgame/${userId}`).then((response) => response.data.gameId);
+  // if no game found, create new game and respond with new game
 };
 
 const getGameState = async () => {
@@ -461,14 +462,24 @@ const getGameState = async () => {
     });
 };
 
-// const guessContainerInnerHTML = (guess, index) => {
-//   innerHTMLStr = `
-//     <div class='guess-container rounded' id='guess-${index}'>
-//     <b>${guess.name}</b></br>${guess.clues.distance.toFixed(2)} km <img src="./images/direction_pointer.png" style='transform:rotate(${guess.clues.bearing}deg)' class="direction-pointer"/>
-//     </div>
-//     `;
-//   return innerHTMLStr;
-// };
+const guessContainerInnerHTML = (guess, index) => {
+  const innerHTMLStr = `
+    <div class='row guess-container rounded' id='guess-${index}'>
+      <div class="col-8 p-1">
+        <b>${guess.name}</b>
+      </div>
+      <div class="col-4 p-1 text-right">
+        ${guess.clues.distance.toFixed(2)} km 
+        <img 
+          src="./images/direction_pointer.png" 
+          style='transform:rotate(${guess.clues.bearing}deg)' 
+          class="direction-pointer"
+        />
+      </div>
+    </div>
+    `;
+  return innerHTMLStr;
+};
 
 const displayGuesses = async (guesses) => {
   // DISPLAY ALL GUESSES IN ORDER
@@ -485,12 +496,22 @@ const displayGuesses = async (guesses) => {
   guesses.forEach((guess, index) => {
     const guessContainer = document.createElement('div');
     guessContainer.setAttribute('id', `guess-${index}`);
-    guessContainer.innerHTML = `
-    <div class='guess-container rounded' id='guess-${index}'>
-    <b>${guess.name}</b></br>${guess.clues.distance.toFixed(2)} km <img src="./images/direction_pointer.png" style='transform:rotate(${guess.clues.bearing}deg)' class="direction-pointer"/>
-    </div>
-    `;
-    // guessContainer.innerHTML = guessContainerInnerHTML(guess, index);
+    // guessContainer.innerHTML = `
+    // <div class='row guess-container rounded' id='guess-${index}'>
+    //   <div class="col-8 p-0">
+    //     <b>${guess.name}</b>
+    //   </div>
+    //   <div class="col-4 p-0 text-right">
+    //     ${guess.clues.distance.toFixed(2)} km
+    //     <img
+    //       src="./images/direction_pointer.png"
+    //       style='transform:rotate(${guess.clues.bearing}deg)'
+    //       class="direction-pointer"
+    //     />
+    //   </div>
+    // </div>
+    // `;
+    guessContainer.innerHTML = guessContainerInnerHTML(guess, index);
     guessContainer.classList.add('rounded');
     guessContainer.style.background = distToColour(guess.clues.distance);
     guessesDiv.appendChild(guessContainer);
@@ -514,11 +535,12 @@ const displayGuessesWin = (guesses) => {
     if (index < guesses.length - 1) { // all guesses except last
       const guessContainer = document.createElement('div');
       guessContainer.setAttribute('id', `guess-${index}`);
-      guessContainer.innerHTML = `
-      <div class='guess-container' id='guess-${index}'>
-      ${guess.name}       ${guess.clues.distance.toFixed(2)}km <img src="./images/direction_pointer.png" style='transform:rotate(${guess.clues.bearing}deg)' class="direction-pointer"/>
-      </div>
-      `;
+      // guessContainer.innerHTML = `
+      // <div class='guess-container' id='guess-${index}'>
+      // ${guess.name}       ${guess.clues.distance.toFixed(2)}km <img src="./images/direction_pointer.png" style='transform:rotate(${guess.clues.bearing}deg)' class="direction-pointer"/>
+      // </div>
+      // `;
+      guessContainer.innerHTML = guessContainerInnerHTML(guess, index);
       guessContainer.classList.add('rounded');
       guessContainer.style.background = distToColour(guess.clues.distance);
 
@@ -535,12 +557,8 @@ const displayGuessesWin = (guesses) => {
       </div>
       `;
       guessContainer.classList.add('rounded');
-
       guessContainer.style.background = distToColour(guess.clues.distance);
-
       guessesDiv.appendChild(guessContainer);
-      // disable input
-      // document.querySelector('#submit-guess-input').style.display = 'none';
       hideGuessInput();
     }
   });
@@ -555,11 +573,7 @@ const displayGuessesLose = (guesses) => {
   guesses.forEach((guess, index) => {
     const guessContainer = document.createElement('div');
     guessContainer.setAttribute('id', `guess-${index}`);
-    guessContainer.innerHTML = `
-    <div class='guess-container' id='guess-${index}'>
-    ${guess.name}   distance: ${guess.clues.distance.toFixed(2)} km <img src="./images/direction_pointer.png" style='transform:rotate(${guess.clues.bearing}deg)' class="direction-pointer"/>
-    </div>
-    `;
+    guessContainer.innerHTML = guessContainerInnerHTML(guess, index);
     guessContainer.classList.add('rounded');
     guessContainer.style.background = distToColour(guess.clues.distance);
 
@@ -567,18 +581,48 @@ const displayGuessesLose = (guesses) => {
     // buildGuessContainer(guess, index);
   });
 
+  // ANSWER CONTAINER
   const answerContainer = document.createElement('div');
   answerContainer.setAttribute('id', 'answer-container');
+  // answerContainer.innerHTML = `
+  //     <div>
+  //     <b>${gameAnswer.name}</b>
+  //     <div>was the right answer. Better luck next time!</div>
+  //     </div>
+  //     `;
   answerContainer.innerHTML = `
-      <div>
-      <b>${gameAnswer.name}</b>
-      <div>was the right answer. Better luck next time!</div>
+    <div class='row rounded guess-container' id='lose-answer'>
+      <div class='col-12 rounded p-1'>
+        <b>${gameAnswer.name}</b>
+        <div>was the right answer. Better luck next time!</div>
       </div>
-      `;
+    </div>
+  `;
   answerContainer.classList.add('rounded');
   guessesDiv.appendChild(answerContainer);
   hideGuessInput();
 };
+
+//  <div class='row guess-container rounded' id='lose-answer'>
+//     <div class='col-12 rounded p-1>
+//       <b>${gameAnswer.name}</b>
+//       </br>was the right answer. Better luck next time!
+//     </div>
+//   </div>
+
+/* <div class='row guess-container rounded' id='guess-${index}'>
+      <div class="col-8 p-1">
+        <b>${guess.name}</b>
+      </div>
+      <div class="col-4 p-1 text-right">
+        ${guess.clues.distance.toFixed(2)} km
+        <img
+          src="./images/direction_pointer.png"
+          style='transform:rotate(${guess.clues.bearing}deg)'
+          class="direction-pointer"
+        />
+      </div>
+    </div> */
 
 const addAllGuessPins = (guesses, answer) => {
   console.log('adding guess pins');
@@ -654,7 +698,7 @@ gameNavElement.addEventListener('click', () => {
   collapseNavbar();
 });
 
-// LOG IN
+// LOG IN NAV
 const loginNavElement = document.querySelector('#login-nav');
 loginNavElement.addEventListener('click', () => {
   const gameDiv = document.querySelector('#game');
@@ -665,7 +709,7 @@ loginNavElement.addEventListener('click', () => {
   collapseNavbar();
 });
 
-// SIGN UP
+// SIGN UP NAV
 const signupNavElement = document.querySelector('#signup-nav');
 signupNavElement.addEventListener('click', () => {
   const gameDiv = document.querySelector('#game');
@@ -674,6 +718,13 @@ signupNavElement.addEventListener('click', () => {
   document.querySelector('#login-page').style.display = 'none';
 
   createSignupPage();
+  collapseNavbar();
+});
+
+// SIGNUP REDIRECT TO LOGIN
+const signupSubmit = document.querySelector('#signup-submit');
+signupSubmit.addEventListener('click', () => {
+  forceLoginPage();
   collapseNavbar();
 });
 
@@ -711,11 +762,6 @@ const startNewGame = async () => {
   const userId = await getUserId();
   await axios.post('/newgame', { userId })
     .then(
-      // clearMarkers(),
-      // getGameState(),
-      // // clear pins
-      // displayGuesses(gamestateGuesses),
-      // addAllGuessPins(gamestateGuesses),
       initGame(),
     );
   newGameButton.style.display = 'none'; // hides button

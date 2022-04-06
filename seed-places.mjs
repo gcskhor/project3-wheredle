@@ -10,13 +10,13 @@ const WEST = [1.3452307569342026, 103.69951293146265];
 const NORTH = [1.431245356216933, 103.80593761990768];
 
 const gPlaceOptions = {
-  location: [1.4285333923596002, 103.81272275312975],
+  location: [1.225202239786671, 103.85031700253556],
   radius: 5000,
   sensor: false,
   language: 'en',
   rankby: 'prominence',
-  types: ['tourist_attraction'],
-  keyword: [],
+  types: [],
+  keyword: ['attraction'],
 };
 
 places.search(gPlaceOptions, (err, response) => {

@@ -36,7 +36,8 @@ const bearing = (destLat, destLng, startLat, startLng) => {
 export default function initGamesController(db) {
   const findgame = async (req, res) => {
     try {
-      console.log(req.params.id);
+      let game;
+      console.log(`user id:  ${req.params.id}`);
       const userId = req.params.id;
       const currentGame = await db.Game.findOne({
         where: {
@@ -49,6 +50,7 @@ export default function initGamesController(db) {
 
       // if no active game is found, return latest updated game
       if (!currentGame) {
+        console.log('no active game found, now finding last played game');
         const lastPlayedGame = await db.Game.findAll({
           limit: 1,
           where: {
@@ -57,12 +59,42 @@ export default function initGamesController(db) {
           order: [['createdAt', 'DESC']],
         });
 
-        const gameId = lastPlayedGame[0].dataValues.id;
+        game = lastPlayedGame;
+        console.log('last played game:');
+        console.log(lastPlayedGame);
 
+        if (lastPlayedGame.length === 0) { // new account, no previous game exists.
+          // create new game.
+          // gets a random location from the Place table
+          console.log('no active game and last played game found, now creating new game');
+
+          const randomLocation = await db.Place.findAll({
+            order: Sequelize.literal('random()'),
+            limit: 1,
+          });
+          // console.log(randomLocation);
+
+          // asigns random location as an answer to a new game
+          const newGame = await db.Game.create({
+            user_id: userId,
+            game_state: {
+              active: true,
+              guesses: [],
+              answer: randomLocation[0],
+            },
+          });
+
+          // const { id } = newGame.dataValues;
+          game = newGame;
+          // res.send({ gameId: id });
+          console.log(game);
+        }
+
+        const gameId = game[0].dataValues.id;
         console.log(gameId);
-        console.log('found a last played game');
 
         res.send({ gameId });
+        console.log('made it to the end');
       }
 
       else {

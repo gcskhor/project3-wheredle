@@ -1,5 +1,5 @@
 body {
-  background-color: whitesmoke;
+  background-color: white;
   padding: 3px;
   font-family: "Quicksand", sans-serif;
 }
@@ -7,9 +7,9 @@ body {
 #map {
   margin: auto;
   height: 400px;
-  /* The height is 400 pixels */
-  width: 95%;
-  /* The width is the width of the web page */
+  width: 91%;
+  // width: 100%;
+  // margin: 5px 0px;
   border-radius: 15px;
 }
 
@@ -77,10 +77,8 @@ input[type="submit"] {
 }
 
 .guess-container {
-  // border: grey solid 1px;
-  // background-color: lightblue;
   border-radius: 5px !important;
-  padding: 10px;
+  padding: 5px;
   margin: 5px;
   border-collapse: separate;
   overflow: hidden;
@@ -88,8 +86,8 @@ input[type="submit"] {
 
 #guess-correct {
   border-width: 2px;
-  background-color: rgb(0, 100, 0);
-  color: #d4d4d4;
+  background-color: #91b65d;
+  color: rgb(17, 17, 17);
 }
 
 .direction-pointer {
@@ -100,6 +98,16 @@ input[type="submit"] {
   border-radius: 5px !important;
 }
 
-// img {
-//   width: 15px;
-// }
+#lose-answer {
+  background-color: #91b65d;
+  color: rgb(17, 17, 17);
+  margin: 0px;
+  margin-bottom: 5px;
+  // margin-right: -5px;
+  // margin-left: -5px;
+  border-radius: 5px !important;
+}
+
+#login-message {
+  background-color: rgb(227 238 237);
+}
