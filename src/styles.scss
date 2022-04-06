@@ -1,6 +1,6 @@
 body {
   background-color: whitesmoke;
-  padding: 5px;
+  padding: 3px;
   font-family: "Quicksand", sans-serif;
 }
 
@@ -10,7 +10,7 @@ body {
   /* The height is 400 pixels */
   width: 95%;
   /* The width is the width of the web page */
-  border-radius: 20px;
+  border-radius: 15px;
 }
 
 /*the container must be positioned relative:*/
@@ -71,12 +71,19 @@ input[type="submit"] {
   padding: 0.5rem 0.5rem;
 }
 
+#guesses-div {
+  overflow: hidden;
+  border-collapse: separate;
+}
+
 .guess-container {
-  border: grey solid 1px;
-  background-color: lightblue;
-  border-radius: 5px;
-  padding: 5px;
+  // border: grey solid 1px;
+  // background-color: lightblue;
+  border-radius: 5px !important;
+  padding: 10px;
   margin: 5px;
+  border-collapse: separate;
+  overflow: hidden;
 }
 
 #guess-correct {
@@ -89,6 +96,10 @@ input[type="submit"] {
   width: 20px;
 }
 
-// #login-page {
-//   display: none;
+.rounded {
+  border-radius: 5px !important;
+}
+
+// img {
+//   width: 15px;
 // }

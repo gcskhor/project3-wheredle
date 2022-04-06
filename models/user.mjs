@@ -8,6 +8,7 @@ export default function userModel(sequelize, DataTypes) {
     },
     email: {
       allowNull: false,
+      unique: true,
       type: DataTypes.STRING,
     },
     password: {

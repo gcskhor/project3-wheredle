@@ -21,8 +21,8 @@
     <title>Project 3: WHEREDLE</title>
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <a class="navbar-brand" href="#"><h1>WHEREDLE</h1></a>
+    <nav class="navbar navbar-expand-sm navbar-light bg-light">
+      <a class="navbar-brand"><h1>WHEREDLE</h1></a>
       <button
         class="navbar-toggler"
         type="button"
@@ -37,15 +37,21 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
           <li class="nav-item active">
-            <a class="nav-link" href="#"
+            <a class="nav-link" href="#" id="game-nav"
               >Home <span class="sr-only">(current)</span></a
             >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="hide-map-button">Toggle Map</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" id="login-nav">Log In</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">Pricing</a>
+            <a class="nav-link" id="signup-nav">Sign Up</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="logout-nav">Log Out</a>
           </li>
         </ul>
       </div>
@@ -55,7 +61,7 @@
       <div id="map">loading map...</div>
 
       <!-- GUESS BUTTON -->
-      <div class="container mt-5">
+      <div class="container mt-3">
         <div class="row">
           <div class="col-md-6 m-auto">
             <h3 class="text-center mb-3">Make your guess:</h3>
@@ -80,7 +86,12 @@
             </div>
             <div id="match-list"></div>
           </div>
-          <button type="button" class="btn btn-info" id="new-game-button">
+          <button
+            type="button"
+            class="btn btn-info"
+            id="new-game-button"
+            style="display: none"
+          >
             Find a new place!
           </button>
         </div>
@@ -96,7 +107,7 @@
           </div> -->
           <div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1">
             <div>
-              <form>
+              <form class="needs-validation" novalidate>
                 <!-- Email input -->
                 <div class="form-outline mb-4">
                   <input
@@ -104,8 +115,10 @@
                     id="login-email-input"
                     class="form-control form-control-md"
                     placeholder="Enter a valid email address"
+                    required
                   />
                 </div>
+                <div class="invalid-feedback">Please fill out this field.</div>
 
                 <!-- Password input -->
                 <div class="form-outline mb-3">
@@ -114,12 +127,14 @@
                     id="login-password-input"
                     class="form-control form-control-md"
                     placeholder="Enter password"
+                    required
                   />
                 </div>
+                <div class="invalid-feedback">Please fill out this field.</div>
 
                 <div class="text-center text-lg-start mt-4 pt-2">
                   <button
-                    type="button"
+                    type="submit"
                     id="login-submit"
                     class="btn btn-primary btn-lg"
                     style="padding-left: 2.5rem; padding-right: 2.5rem"
@@ -128,8 +143,63 @@
                   </button>
                   <p class="small fw-bold mt-2 pt-1 mb-0">
                     Don't have an account?
-                    <a href="#!" class="link-danger">Register</a>
+                    <a href="#!" class="link-danger">Sign Up</a>
                   </p>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIGNUP PAGE  -->
+    <div class="vh-90 vw-70" id="signup-page" style="display: none">
+      <div class="container-fluid h-custom">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+          <!-- <div class="col-md-9 col-lg-6 col-xl-5">
+            <img src="" class="img-fluid" alt="Sample image" />
+          </div> -->
+          <div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1">
+            <div>
+              <form class="needs-validation" novalidate>
+                <!-- Email input -->
+                <div class="form-outline mb-4 input-group has-validation">
+                  <input
+                    type="email"
+                    id="signup-email-input"
+                    class="form-control form-control-md"
+                    placeholder="Enter a valid email address"
+                    required
+                  />
+                  <div class="invalid-feedback">
+                    Please fill out this field.
+                  </div>
+                </div>
+
+                <!-- Password input -->
+                <div class="form-outline mb-3">
+                  <input
+                    type="password"
+                    id="signup-password-input"
+                    class="form-control form-control-md"
+                    placeholder="Enter password"
+                    required
+                  />
+                  <div class="invalid-feedback">
+                    Please fill out this field.
+                  </div>
+                </div>
+
+                <div class="text-center text-lg-start mt-4 pt-2">
+                  <button
+                    type="submit"
+                    id="signup-submit"
+                    class="btn btn-primary btn-lg"
+                    style="padding-left: 2.5rem; padding-right: 2.5rem"
+                  >
+                    signup
+                  </button>
                 </div>
               </form>
             </div>
@@ -145,6 +215,31 @@
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAvFStCxa8h0bJEyVvKKe93gCUsEcJYZO4&callback=initMap&v=weekly"
     ></script>
 
+    <script>
+      // BOOTSTRAP VALIDATION
+      (function () {
+        "use strict";
+
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        var forms = document.querySelectorAll(".needs-validation");
+
+        // Loop over them and prevent submission
+        Array.prototype.slice.call(forms).forEach(function (form) {
+          form.addEventListener(
+            "submit",
+            function (event) {
+              if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+              }
+
+              form.classList.add("was-validated");
+            },
+            false
+          );
+        });
+      })();
+    </script>
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script
       src="https://code.jquery.com/jquery-3.3.1.slim.min.js"

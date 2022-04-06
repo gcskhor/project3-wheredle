@@ -129,6 +129,7 @@ module.exports = {
       {
         user_id: 1,
         game_state: JSON.stringify({
+          active: true,
           guesses: [],
           answer: loc1,
         }),
@@ -138,6 +139,7 @@ module.exports = {
       {
         user_id: 2,
         game_state: JSON.stringify({
+          active: true,
           guesses: [],
           answer: loc2,
         }),

@@ -9,6 +9,7 @@ module.exports = {
       },
       email: {
         allowNull: false,
+        unique: true,
         type: Sequelize.STRING,
       },
       password: {
@@ -63,6 +64,7 @@ module.exports = {
       name: {
         allowNull: false,
         type: Sequelize.STRING,
+        unique: true,
       },
       formatted_address: {
         allowNull: false,
@@ -86,7 +88,7 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('places', null, {});
+    // await queryInterface.dropTable('places', null, {});
     await queryInterface.dropTable('games', null, {});
     await queryInterface.dropTable('users', null, {});
   },

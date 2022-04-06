@@ -9,6 +9,7 @@ export default function placeModel(sequelize, DataTypes) {
     name: {
       allowNull: false,
       type: DataTypes.STRING,
+      unique: true,
     },
     formatted_address: {
       allowNull: false,

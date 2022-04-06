@@ -22,5 +22,7 @@ export default function bindRoutes(app) {
 
   app.post('/submit-guess/:id', GamesController.makeGuess);
   app.post('/login', UserController.login);
+  app.post('/signup', UserController.signup);
   app.post('/checkauth', UserController.checkAuth);
+  app.post('/logout', UserController.logout);
 }
