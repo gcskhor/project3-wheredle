@@ -56,15 +56,6 @@ function clearMarkers() {
   markers.length = 0;
 }
 
-// CUSTOM PIN ICON -> pin icon outside the initmap function seems to cause errors with displaying the map
-// const pinIcon = new google.maps.MarkerImage(
-//   '/images/pin.png',
-//   null,
-//   null,
-//   null,
-//   new google.maps.Size(30, 45),
-// );
-
 function setMapOnAll(map) {
   for (let i = 0; i < allLocationMarkers.length; i += 1) {
     allLocationMarkers[i].setMap(map);
@@ -79,21 +70,35 @@ function showMarkers() {
   setMapOnAll(map);
 }
 
+const infoWindowHTMLContent = (location) => {
+  const content = `
+  <h5>${location.name}</h5>
+  <div>Address: 
+    </br>
+    <b>${location.formatted_address}</b>
+  </div>
+  <div style="margin-top:3px">
+    Rating: </br>
+    <b>${location.rating}</b>
+  </div>
+  `;
+  return content;
+};
+
 const addMapLocationMarkers = (location) => {
   const marker = new google.maps.Marker({
     position: location.geometry.location,
     map,
     icon: {
-      url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+      // url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+      url: '/images/loc_pin.png',
+      scaledSize: new google.maps.Size(22, 35),
+
     }, // disable this if pinIcon is removed
     zIndex: 10,
   });
 
-  const infoWindowContent = `
-  <h4>${location.name}</h4>
-  <div>${location.formatted_address}</div>
-  <div>Rating: ${location.rating}</div>
-  `;
+  const infoWindowContent = infoWindowHTMLContent(location);
 
   // ADD INFO WINDOW
   const infowindow = new google.maps.InfoWindow({
@@ -122,24 +127,6 @@ const addAllMapLocationMarkers = (locations) => {
   });
 };
 
-const createRevealLocButton = () => {
-  const revealLocButton = document.querySelector('#show-locations-button');
-  revealLocButton.addEventListener('click', () => {
-    if (markersOn) {
-      hideMarkers();
-      console.log('hiding markers');
-      markersOn = false;
-    }
-    else {
-      showMarkers();
-      console.log('showing markers');
-      markersOn = true;
-    }
-  });
-};
-
-// createRevealLocButton();
-
 // ADD MARKER FUNCTION
 const addMarkerStatic = (guess) => {
   const marker = new google.maps.Marker({
@@ -150,11 +137,7 @@ const addMarkerStatic = (guess) => {
     // icon: pinIcon, // disable this if pinIcon is removed
   });
 
-  const infoWindowContent = `
-  <h4>${guess.name}</h4>
-  <div>${guess.formatted_address}</div>
-  <div>Rating: ${guess.rating}</div>
-  `;
+  const infoWindowContent = infoWindowHTMLContent(guess);
 
   // ADD INFO WINDOW
   const infowindow = new google.maps.InfoWindow({
@@ -188,11 +171,7 @@ const addMarkerAnimation = (guess) => {
   // pan map to marker
   map.panTo(marker.getPosition());
 
-  const infoWindowContent = `
-  <h4>${guess.name}</h4>
-  <div>${guess.formatted_address}</div>
-  <div>Rating: ${guess.rating}</div>
-  `;
+  const infoWindowContent = infoWindowHTMLContent(guess);
 
   // ADD INFO WINDOW
   const infowindow = new google.maps.InfoWindow({
@@ -211,29 +190,23 @@ const addMarkerAnimation = (guess) => {
   markers.push(marker);
 };
 
-// ADD MARKER ANSWER
 const addMarkerAnswer = (guess) => {
   const marker = new google.maps.Marker({
     position: guess.geometry.location,
     animation: google.maps.Animation.DROP,
     map,
     icon: {
-      url: 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png',
-      // size: new google.maps.Size(43, 59),
-      // origin: new google.maps.Point(0, 0),
-      // anchor: new google.maps.Point(0, 32),
+      url: '/images/answer_pin2.png',
+      scaledSize: new google.maps.Size(27, 43),
     },
-    zIndex: 100,
+    zIndex: 9999,
+
   });
 
   // pan map to marker
   map.panTo(marker.getPosition());
 
-  const infoWindowContent = `
-  <h4>${guess.name}</h4>
-  <div>${guess.formatted_address}</div>
-  <div>Rating: ${guess.rating}</div>
-  `;
+  const infoWindowContent = infoWindowHTMLContent(guess);
 
   // ADD INFO WINDOW
   const infowindow = new google.maps.InfoWindow({
@@ -321,15 +294,6 @@ function initMap() {
     },
   });
 
-  // // CUSTOM PIN ICON
-  // const pinIcon = new google.maps.MarkerImage(
-  //   '/images/pin.png',
-  //   null,
-  //   null,
-  //   null,
-  //   new google.maps.Size(30, 45),
-  // );
-
   // CUSTOM BUTTON
   const locationButtonControlDiv = document.createElement('div');
   LocationToggleControl(locationButtonControlDiv);
@@ -345,9 +309,6 @@ function initMap() {
   map.setMapTypeId('styled_map');
 }
 
-// ENSURE MAP IS MADE GLOBAL TO THE WINDOW TO OVERCOME WEBPACK ISSUES
-window.initMap = initMap;
-
 // troubleshooting google maps appearing:
 // https://stackoverflow.com/questions/48705066/initmap-is-not-a-function-error-in-js-console-google-maps-api
 
@@ -359,7 +320,7 @@ const submitGuessBtn = document.getElementById('submit-guess');
 const outputHtml = (matches) => {
   if (matches.length > 0) {
     const html = matches.map((match, index) => `<div id="place-${index}" class="card card-body">
-        <h4>${match.name}</h4>
+        <p>${match.name}</p>
       </div>`).join('');
 
     matchList.innerHTML = html;
@@ -407,7 +368,6 @@ searchInput.addEventListener('input', () => {
 const getAllLocations = () => {
   axios.get('/all-locations')
     .then((response) => {
-      // console.log('getting all locations: getAllLocations()');
       allLocs = response.data.places;
       console.log(allLocs);
       addAllMapLocationMarkers(allLocs);
@@ -496,26 +456,10 @@ const displayGuesses = async (guesses) => {
   guesses.forEach((guess, index) => {
     const guessContainer = document.createElement('div');
     guessContainer.setAttribute('id', `guess-${index}`);
-    // guessContainer.innerHTML = `
-    // <div class='row guess-container rounded' id='guess-${index}'>
-    //   <div class="col-8 p-0">
-    //     <b>${guess.name}</b>
-    //   </div>
-    //   <div class="col-4 p-0 text-right">
-    //     ${guess.clues.distance.toFixed(2)} km
-    //     <img
-    //       src="./images/direction_pointer.png"
-    //       style='transform:rotate(${guess.clues.bearing}deg)'
-    //       class="direction-pointer"
-    //     />
-    //   </div>
-    // </div>
-    // `;
     guessContainer.innerHTML = guessContainerInnerHTML(guess, index);
     guessContainer.classList.add('rounded');
     guessContainer.style.background = distToColour(guess.clues.distance);
     guessesDiv.appendChild(guessContainer);
-    // buildGuessContainer(guess, index);
   });
 
   console.log(`gameIsActive:   ${gameIsActive}`);
@@ -584,12 +528,7 @@ const displayGuessesLose = (guesses) => {
   // ANSWER CONTAINER
   const answerContainer = document.createElement('div');
   answerContainer.setAttribute('id', 'answer-container');
-  // answerContainer.innerHTML = `
-  //     <div>
-  //     <b>${gameAnswer.name}</b>
-  //     <div>was the right answer. Better luck next time!</div>
-  //     </div>
-  //     `;
+
   answerContainer.innerHTML = `
     <div class='row rounded guess-container' id='lose-answer'>
       <div class='col-12 rounded p-1'>
@@ -602,27 +541,6 @@ const displayGuessesLose = (guesses) => {
   guessesDiv.appendChild(answerContainer);
   hideGuessInput();
 };
-
-//  <div class='row guess-container rounded' id='lose-answer'>
-//     <div class='col-12 rounded p-1>
-//       <b>${gameAnswer.name}</b>
-//       </br>was the right answer. Better luck next time!
-//     </div>
-//   </div>
-
-/* <div class='row guess-container rounded' id='guess-${index}'>
-      <div class="col-8 p-1">
-        <b>${guess.name}</b>
-      </div>
-      <div class="col-4 p-1 text-right">
-        ${guess.clues.distance.toFixed(2)} km
-        <img
-          src="./images/direction_pointer.png"
-          style='transform:rotate(${guess.clues.bearing}deg)'
-          class="direction-pointer"
-        />
-      </div>
-    </div> */
 
 const addAllGuessPins = (guesses, answer) => {
   console.log('adding guess pins');
@@ -721,6 +639,13 @@ signupNavElement.addEventListener('click', () => {
   collapseNavbar();
 });
 
+// SIGNUP LINK
+const signupLink = document.querySelector('#signup-link');
+signupLink.addEventListener('click', () => {
+  document.querySelector('#login-page').style.display = 'none';
+  createSignupPage();
+});
+
 // SIGNUP REDIRECT TO LOGIN
 const signupSubmit = document.querySelector('#signup-submit');
 signupSubmit.addEventListener('click', () => {
@@ -803,5 +728,8 @@ const initGame = () => {
   300);
 };
 export default initGame;
+
+// ENSURE MAP IS MADE GLOBAL TO THE WINDOW TO OVERCOME WEBPACK ISSUES
+window.initMap = initMap;
 
 initGame();

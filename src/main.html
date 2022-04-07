@@ -64,9 +64,8 @@
       <div class="container mt-3">
         <div class="row">
           <div class="col-md-6 m-auto">
-            <!-- <h3 class="text-center mb-3">Make your guess:</h3> -->
             <div id="guesses-div"></div>
-            <div class="input-group mb-3" id="submit-guess-input">
+            <div class="input-group mt-1" id="submit-guess-input">
               <input
                 type="text"
                 class="form-control"
@@ -106,18 +105,57 @@
     <div class="vh-90 vw-70" id="login-page" style="display: none">
       <div class="container-fluid h-custom">
         <div class="row d-flex justify-content-center align-items-center h-100">
-          <div class="col-11 rounded mb-4 p-3" id="login-message">
-            So you think Singapore is boring (You're probably right)?
-            <b>Wheredle</b> helps you decide where to go on your next day out,
-            in a fun and exciting way!
+          <div
+            class="col-11 rounded mb-4 p-3"
+            id="login-message"
+            style="margin-top: 20px"
+          >
+            <div class="head">
+              <b>So you think Singapore is boring?</b>
+            </div>
+            <div class="line">You're probably right.</div>
+            <div class="line">
+              Wheredle helps you decide where to go on your next day out, in a
+              fun and exciting way!
+            </div>
             <hr />
-            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eaque,
-            commodi. Lorem ipsum dolor sit amet consectetur, adipisicing elit.
-            Aspernatur, doloremque?
+            <div class="head">
+              <b>How to play</b>
+            </div>
+            <div class="line">Guess the location in 5 tries to win.</div>
+            <div class="line">
+              Your guess needs to be from the options provided in the guess
+              input.
+            </div>
+            <div class="line">
+              After each guess, you will be given a distance and a direction
+              towards the correct location.
+            </div>
             <hr />
-            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eaque,
-            commodi. Lorem ipsum dolor sit amet consectetur, adipisicing elit.
-            Aspernatur, doloremque?
+            <div class="head">
+              <b>Example</b>
+            </div>
+            <div
+              class="row guess-container rounded"
+              id="guess-${index}"
+              style="background-color: rgb(234, 159, 152); margin: 7px 0px"
+            >
+              <div class="col-8 p-1">
+                <b>ArtScience Museum</b>
+              </div>
+              <div class="col-4 p-1 text-right">
+                2.15 km
+                <img
+                  src="./images/direction_pointer.png"
+                  style="transform: rotate(45deg)"
+                  class="direction-pointer"
+                />
+              </div>
+            </div>
+            <div class="line">
+              The correct location is 2.15 km away from and Northeast of
+              ArtScience Museum.
+            </div>
           </div>
 
           <div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1">
@@ -158,7 +196,9 @@
                   </button>
                   <p class="small fw-bold mt-2 pt-1 mb-0">
                     Don't have an account?
-                    <a href="#!" class="link-danger">Sign Up</a>
+                    <a href="#!" class="link-danger" id="signup-link"
+                      >Sign Up</a
+                    >
                   </p>
                 </div>
               </form>
@@ -172,9 +212,19 @@
     <div class="vh-90 vw-70" id="signup-page" style="display: none">
       <div class="container-fluid h-custom">
         <div class="row d-flex justify-content-center align-items-center h-100">
-          <!-- <div class="col-md-9 col-lg-6 col-xl-5">
-            <img src="" class="img-fluid" alt="Sample image" />
-          </div> -->
+          <div
+            class="col-11 rounded mb-4 p-3"
+            id="login-message"
+            style="margin-top: 20px"
+          >
+            <div class="head">
+              <b>Pro tip of the day:</b>
+            </div>
+            <div class="line">
+              Signing up gives you a 99% greater chance of winning a game of
+              Wheredle.
+            </div>
+          </div>
           <div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1">
             <div>
               <form class="needs-validation" novalidate>
