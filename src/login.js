@@ -79,6 +79,7 @@ export function createSignupPage() {
       password: passwordDiv.value,
     })
       .then((response) => {
+        console.log(response);
         if (response.data.message !== 'signing up') {
           const signupAlert = document.createElement('div');
           signupAlert.innerHTML = `

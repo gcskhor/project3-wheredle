@@ -9,3 +9,13 @@ curl -L -X GET 'https://maps.googleapis.com/maps/api/place/textsearch/json?query
 20 restaurants
 curl -L -X GET 'https://maps.googleapis.com/maps/api/place/textsearch/json?query=restaurants+singapore&key=AIzaSyAZJ3xmSE-qQq3a37nzAQqw6Uwk2C8tr1g'
 
+pg_dump -Fc --no-acl --no-owner -h localhost -U gcskhor project3_development > project3_development.dump
+
+
+aws s3 presign s3://testbucketforgerald/project3_development.dump
+
+
+
+
+***
+heroku pg:backups:restore 'https://testbucketforgerald.s3.amazonaws.com/project3_development.dump?AWSAccessKeyId=AKIAVCSJP7LU6RZAVQ7B&Signature=CZpAdomSvSrtbit5pYkKBL5TrZ0%3D&Expires=1649307075' postgres://qbzidszvkpdzeq:567cbaeb98c600412b2673f489399fc97aadc7f76dc066943328a35cad56b22c@ec2-3-217-251-77.compute-1.amazonaws.com:5432/dbuqrmi6s4halh

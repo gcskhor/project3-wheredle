@@ -8,6 +8,8 @@ import {
   createLoginPage, checkUserLogin, forceLoginPage, createSignupPage,
 } from './login.js';
 
+const axios = require('axios');
+
 const ColorScale = require('color-scales');
 
 const colorScale = new ColorScale(0, 150, ['#E36055', '#F5F5F3', '#91D1D1']);
@@ -42,14 +44,12 @@ const initGlobalVars = () => {
 };
 
 // GOOGLE API CONFIG + API KEY
-const axios = require('axios');
 
 let map;
 const markers = [];
 const allLocationMarkers = [];
 
 function clearMarkers() {
-  // console.log('clearing markers...');
   for (let i = 0; i < markers.length; i++) {
     markers[i].setMap(null);
   }
@@ -90,11 +90,9 @@ const addMapLocationMarkers = (location) => {
     position: location.geometry.location,
     map,
     icon: {
-      // url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
       url: '/images/loc_pin.png',
       scaledSize: new google.maps.Size(22, 35),
-
-    }, // disable this if pinIcon is removed
+    },
     zIndex: 10,
   });
 
@@ -113,9 +111,6 @@ const addMapLocationMarkers = (location) => {
     });
   });
 
-  // map.addListener('click', () => {
-  //   infowindow.close();
-  // });
   allLocationMarkers.push(marker);
 
   hideMarkers(); // turn off markers on init
@@ -134,7 +129,6 @@ const addMarkerStatic = (guess) => {
     map,
     zIndex: 99,
 
-    // icon: pinIcon, // disable this if pinIcon is removed
   });
 
   const infoWindowContent = infoWindowHTMLContent(guess);
@@ -152,9 +146,6 @@ const addMarkerStatic = (guess) => {
     });
   });
 
-  // map.addListener('click', () => {
-  //   infowindow.close();
-  // });
   markers.push(marker);
 };
 
@@ -164,8 +155,6 @@ const addMarkerAnimation = (guess) => {
     animation: google.maps.Animation.DROP,
     map,
     zIndex: 99,
-
-    // icon: pinIcon, // disable this if pinIcon is removed
   });
 
   // pan map to marker
@@ -192,7 +181,7 @@ const addMarkerAnimation = (guess) => {
 
 const addMarkerAnswer = (guess) => {
   const marker = new google.maps.Marker({
-    position: guess.geometry.location,
+    position: guess.geometry.location || null,
     animation: google.maps.Animation.DROP,
     map,
     icon: {
@@ -479,17 +468,11 @@ const displayGuessesWin = (guesses) => {
     if (index < guesses.length - 1) { // all guesses except last
       const guessContainer = document.createElement('div');
       guessContainer.setAttribute('id', `guess-${index}`);
-      // guessContainer.innerHTML = `
-      // <div class='guess-container' id='guess-${index}'>
-      // ${guess.name}       ${guess.clues.distance.toFixed(2)}km <img src="./images/direction_pointer.png" style='transform:rotate(${guess.clues.bearing}deg)' class="direction-pointer"/>
-      // </div>
-      // `;
       guessContainer.innerHTML = guessContainerInnerHTML(guess, index);
       guessContainer.classList.add('rounded');
       guessContainer.style.background = distToColour(guess.clues.distance);
 
       guessesDiv.appendChild(guessContainer);
-      // buildGuessContainer(guess, index);
     }
     else { // last guess
       const guessContainer = document.createElement('div');
@@ -509,7 +492,6 @@ const displayGuessesWin = (guesses) => {
 };
 
 const displayGuessesLose = (guesses) => {
-  // TODO: FINISH THIS FUNCTION
   const guessesDiv = document.querySelector('#guesses-div');
   guessesDiv.innerHTML = ''; // clear innerhtml before repopulating
   console.log('displaying Lose guesses: displayGuessesLose()');
@@ -522,7 +504,6 @@ const displayGuessesLose = (guesses) => {
     guessContainer.style.background = distToColour(guess.clues.distance);
 
     guessesDiv.appendChild(guessContainer);
-    // buildGuessContainer(guess, index);
   });
 
   // ANSWER CONTAINER
@@ -577,7 +558,6 @@ const submitGuess = async () => {
           console.log('WIN BY SUBMIT');
 
           gameAnswer = answer; // update global answer variable
-          // change last box to something different!
           displayGuessesWin(guesses);
           addMarkerAnswer(answer);
           showNewGameButton();
@@ -698,15 +678,16 @@ const showNewGameButton = () => {
   newGameButton.addEventListener('click', startNewGame);
 };
 
-const initGame = () => {
+const initGame = async () => {
   // INIT GAME FUNCTIONS
-  initGlobalVars();
-  clearMarkers();
-  checkUserLogin();
-  getAllLocations(); // extracts all possible guesses from the db and places into the allLocs variable
-  getGameState(); // places all guesses into the gamestateGuesses variable
-  // showNewGameButton();
-  setTimeout(() => {
+  const results = Promise.all([
+    initGlobalVars(),
+    clearMarkers(),
+    checkUserLogin(),
+    getAllLocations(), // extracts all possible guesses from the db and places into the allLocs variable
+    getGameState(), // places all guesses into the gamestateGuesses variable
+  ]).then(() => {
+    // showNewGameButton();
     if (gameIsActive) {
       displayGuesses(gamestateGuesses);
       document.querySelector('#new-game-button').style.display = 'none';
@@ -724,9 +705,9 @@ const initGame = () => {
 
     addAllGuessPins(gamestateGuesses);
     console.log(gamestateGuesses);
-  },
-  300);
+  });
 };
+
 export default initGame;
 
 // ENSURE MAP IS MADE GLOBAL TO THE WINDOW TO OVERCOME WEBPACK ISSUES

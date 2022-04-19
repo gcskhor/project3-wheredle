@@ -52,6 +52,9 @@ export default function initUsersController(db) {
         password: generateHash(password),
       });
       console.log(createdUser);
+      if (!createdUser) {
+        res.status(409).send({ message: 'email already exists' });
+      }
     } catch (error) {
       console.log(error);
     }
